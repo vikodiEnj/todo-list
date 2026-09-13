@@ -234,3 +234,73 @@ h1 {
   background: #f2f3f9;
   color: #e5484d;
 }
+
+/* --- Data (Redux Thunk demo) --- */
+
+.data-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #eef0f7;
+}
+
+.btn-retry {
+  background: #e5484d;
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-retry:hover {
+  background: #d13c41;
+}
+
+.data-loading {
+  margin: 0;
+  font-size: 14px;
+  color: #7a7d92;
+  text-align: center;
+}
+
+.data-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fdeeee;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.data-error-text {
+  margin: 0;
+  font-size: 13px;
+  color: #e5484d;
+  flex: 1;
+}
+
+.data-results {
+  margin-top: 14px;
+}
+
+.data-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #565971;
+}
+
+.data-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.data-item {
+  font-size: 14px;
+  color: #2b2d3a;
+  padding: 8px 10px;
+  background: #f8f9fd;
+  border-radius: 8px;
+}
