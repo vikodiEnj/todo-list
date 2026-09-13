@@ -34,3 +34,17 @@ export const setSortOrderAction = (sort) => ({
   type: "setSortOrder",
   payload: sort,
 });
+
+export const loadingAction = () => ({
+  type: "fetchLoading",
+});
+
+export const successAction = (data) => ({
+  type: "fetchSuccess",
+  payload: data,
+});
+
+export const errorAction = (text) => ({
+  type: "fetchError",
+  payload: text,
+});

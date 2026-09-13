@@ -14,6 +14,7 @@ import {
   setSortOrderAction,
   setFilterAction,
 } from "./redux/actions";
+import Data from "./data";
 
 function App() {
   const tasks = useSelector((state) => state.tasks);
@@ -91,6 +92,7 @@ function App() {
         editTask={editTask}
       />
       <Footer clearCompleted={clearCompleted} leftTasks={leftTasks} />
+      <Data />
     </div>
   );
 }
