@@ -1,19 +1,19 @@
 import "./App.css";
-import TaskList from "./TaskList";
-import TaskInput from "./TaskInput";
-import TaskFilter from "./TaskFilter";
-import Footer from "./Footer";
+import TaskList from "./features/tasks/TaskList";
+import TaskInput from "./features/tasks/TaskInput";
+import TaskFilter from "./features/filter/TaskFilter";
+import Footer from "./features/tasks/Footer";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  addTaskAction,
-  deleteTaskAction,
-  toggleTaskAction,
-  editTaskAction,
-  clearCompletedAction,
-  setSortOrderAction,
-  setFilterAction,
-} from "./redux/actions";
+  addTask,
+  deleteTask,
+  toggleTask,
+  editTask,
+  clearCompleted,
+} from "./features/tasks/todosSlice";
+import { setFilter } from "./features/filter/filterSlice";
+import { setSortOrder } from "./features/filter/sortSlice";
 
 function App() {
   const tasks = useSelector((state) => state.tasks);
@@ -44,32 +44,32 @@ function App() {
     }
   });
 
-  function toggleTask(id) {
-    dispatch(toggleTaskAction(id));
+  function toggleTaskFn(id) {
+    dispatch(toggleTask(id));
   }
 
-  function deleteTask(id) {
-    dispatch(deleteTaskAction(id));
+  function deleteTaskFn(id) {
+    dispatch(deleteTask(id));
   }
 
-  function addTask(task) {
-    dispatch(addTaskAction(task));
+  function addTaskFn(task) {
+    dispatch(addTask(task));
   }
 
-  function editTask(id, newText) {
-    dispatch(editTaskAction(id, newText));
+  function editTaskFn(id, newText) {
+    dispatch(editTask({ id, text: newText }));
   }
 
-  function clearCompleted() {
-    dispatch(clearCompletedAction());
+  function clearCompletedFn() {
+    dispatch(clearCompleted());
   }
 
-  function setFilter(filter) {
-    dispatch(setFilterAction(filter));
+  function setFilterFn(filter) {
+    dispatch(setFilter(filter));
   }
 
-  function setSortOrder(sort) {
-    dispatch(setSortOrderAction(sort));
+  function setSortOrderFn(sort) {
+    dispatch(setSortOrder(sort));
   }
 
   const leftTasks = tasks.filter((item) => item.isComplete === false).length;
@@ -77,20 +77,20 @@ function App() {
   return (
     <div className="app">
       <h1>Приветствую проверяющего</h1>
-      <TaskInput addTask={addTask} />
+      <TaskInput addTask={addTaskFn} />
       <TaskFilter
         filter={filter}
-        setFilter={setFilter}
+        setFilter={setFilterFn}
         sortOrder={sort}
-        setSortOrder={setSortOrder}
+        setSortOrder={setSortOrderFn}
       />
       <TaskList
         tasks={sortedTasks}
-        toggleTask={toggleTask}
-        deleteTask={deleteTask}
-        editTask={editTask}
+        toggleTask={toggleTaskFn}
+        deleteTask={deleteTaskFn}
+        editTask={editTaskFn}
       />
-      <Footer clearCompleted={clearCompleted} leftTasks={leftTasks} />
+      <Footer clearCompleted={clearCompletedFn} leftTasks={leftTasks} />
     </div>
   );
 }
