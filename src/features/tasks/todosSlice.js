@@ -1,45 +1,83 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const saved = localStorage.getItem("tasks");
-
-const initialState = saved
-  ? JSON.parse(saved)
-  : [
-      { id: 1, text: "Покушать", isComplete: true },
-      { id: 2, text: "Поесть", isComplete: false },
-      { id: 3, text: "Пообедать", isComplete: false },
-    ];
+export const fetchTodos = createAsyncThunk(
+  "todos/fetchTodos",
+  async (_, thunkAPI) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/todos`, {
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
+        },
+      });
+      if (response.ok) {
+        const json = await response.json();
+        return json.data;
+      } else {
+        return thunkAPI.rejectWithValue(response.statusText);
+      }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
 
 const todosSlice = createSlice({
   name: "todos",
-  initialState,
+  initialState: {
+    items: [],
+    loading: false,
+    error: null,
+  },
   reducers: {
     addTask: (state, action) => {
-      state.push({ id: Date.now(), text: action.payload, isComplete: false });
+      state.items.push({
+        id: Date.now(),
+        title: action.payload,
+        completed: false,
+      });
     },
     toggleTask: (state, action) => {
-      const toggledTask = state.find((item) => item.id === action.payload);
-      toggledTask.isComplete = !toggledTask.isComplete;
+      const toggledTask = state.items.find(
+        (item) => item.id === action.payload,
+      );
+      toggledTask.completed = !toggledTask.completed;
     },
     deleteTask: (state, action) => {
-      const index = state.findIndex((task) => task.id === action.payload);
+      const index = state.items.findIndex((task) => task.id === action.payload);
       if (index !== -1) {
-        state.splice(index, 1);
+        state.items.splice(index, 1);
       }
     },
     editTask: (state, action) => {
-      const index = state.findIndex((task) => task.id === action.payload.id);
+      const index = state.items.findIndex(
+        (task) => task.id === action.payload.id,
+      );
       if (index !== -1) {
-        state.splice(index, 1, {
-          id: state[index].id,
-          text: action.payload.text,
-          isComplete: state[index].isComplete,
+        state.items.splice(index, 1, {
+          id: state.items[index].id,
+          title: action.payload.title,
+          completed: state.items[index].completed,
         });
       }
     },
     clearCompleted: (state) => {
-      return state.filter((item) => item.isComplete === false);
+      state.items = state.items.filter((item) => item.completed === false);
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTodos.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchTodos.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchTodos.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

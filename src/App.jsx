@@ -11,28 +11,29 @@ import {
   toggleTask,
   editTask,
   clearCompleted,
+  fetchTodos,
 } from "./features/tasks/todosSlice";
 import { setFilter } from "./features/filter/filterSlice";
 import { setSortOrder } from "./features/filter/sortSlice";
 
 function App() {
-  const tasks = useSelector((state) => state.tasks);
+  const { items, loading, error } = useSelector((state) => state.tasks);
   const filter = useSelector((state) => state.filter);
   const sort = useSelector((state) => state.sort);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    dispatch(fetchTodos());
+  }, []);
 
-  const filteredTasks = tasks.filter((item) => {
+  const filteredTasks = items.filter((item) => {
     if (filter === "All") {
       return true;
     } else if (filter === "Active") {
-      return item.isComplete === false;
+      return item.completed === false;
     } else {
-      return item.isComplete === true;
+      return item.completed === true;
     }
   });
 
@@ -57,7 +58,7 @@ function App() {
   }
 
   function editTaskFn(id, newText) {
-    dispatch(editTask({ id, text: newText }));
+    dispatch(editTask({ id, title: newText }));
   }
 
   function clearCompletedFn() {
@@ -72,7 +73,7 @@ function App() {
     dispatch(setSortOrder(sort));
   }
 
-  const leftTasks = tasks.filter((item) => item.isComplete === false).length;
+  const leftTasks = items.filter((item) => item.completed === false).length;
 
   return (
     <div className="app">
@@ -84,12 +85,27 @@ function App() {
         sortOrder={sort}
         setSortOrder={setSortOrderFn}
       />
-      <TaskList
-        tasks={sortedTasks}
-        toggleTask={toggleTaskFn}
-        deleteTask={deleteTaskFn}
-        editTask={editTaskFn}
-      />
+      {loading ? (
+        <p className="loading-text">Загрузка...</p>
+      ) : error ? (
+        <div className="error-box">
+          <p className="error-title">Ошибка, попробуйте снова</p>
+          <p className="error-detail">{error}</p>
+        </div>
+      ) : (
+        <TaskList
+          items={sortedTasks}
+          toggleTask={toggleTaskFn}
+          deleteTask={deleteTaskFn}
+          editTask={editTaskFn}
+        />
+      )}
+      <button
+        className="btn btn-refresh"
+        onClick={() => dispatch(fetchTodos())}
+      >
+        Обновить данные
+      </button>
       <Footer clearCompleted={clearCompletedFn} leftTasks={leftTasks} />
     </div>
   );

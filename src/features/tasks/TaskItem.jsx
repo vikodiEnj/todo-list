@@ -3,7 +3,7 @@ import { useState } from "react";
 const TaskItem = ({ item, toggleTask, deleteTask, editTask }) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const [draft, setDraft] = useState(item.text);
+  const [draft, setDraft] = useState(item.title);
 
   function saveEdit() {
     if (draft.trim().length === 0) {
@@ -27,7 +27,7 @@ const TaskItem = ({ item, toggleTask, deleteTask, editTask }) => {
       <input
         type="checkbox"
         className="task-checkbox"
-        checked={item.isComplete}
+        checked={item.completed}
         onChange={() => toggleTask(item.id)}
       />
       {isEditing ? (
@@ -49,8 +49,8 @@ const TaskItem = ({ item, toggleTask, deleteTask, editTask }) => {
           </button>
         </div>
       ) : (
-        <span className={item.isComplete ? "task-text completed" : "task-text"}>
-          {item.text}
+        <span className={item.completed ? "task-text completed" : "task-text"}>
+          {item.title}
         </span>
       )}
       {!isEditing && (
@@ -59,7 +59,7 @@ const TaskItem = ({ item, toggleTask, deleteTask, editTask }) => {
             className="btn btn-edit"
             onClick={() => {
               setIsEditing(true);
-              setDraft(item.text);
+              setDraft(item.title);
             }}
           >
             Редактировать

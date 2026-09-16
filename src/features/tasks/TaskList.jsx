@@ -1,10 +1,10 @@
 import TaskItem from "./TaskItem";
 
-const TaskList = ({ tasks, toggleTask, deleteTask, editTask }) => {
+const TaskList = ({ items, toggleTask, deleteTask, editTask }) => {
   return (
     <ul className="task-list">
-      {tasks.length === 0 && <li className="empty-state">Задач нет</li>}
-      {tasks.map((item) => (
+      {items.length === 0 && <li className="empty-state">Задач нет</li>}
+      {items.map((item) => (
         <TaskItem
           key={item.id}
           item={item}
