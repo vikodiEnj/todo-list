@@ -1,6 +1,11 @@
 import TaskItem from "./TaskItem";
 
-const TaskList = ({ items, toggleTask, deleteTask, editTask }) => {
+const TaskList = ({
+  items,
+  toggleTask,
+  deleteTask,
+  actionLoading,
+}) => {
   return (
     <ul className="task-list">
       {items.length === 0 && <li className="empty-state">Задач нет</li>}
@@ -10,7 +15,7 @@ const TaskList = ({ items, toggleTask, deleteTask, editTask }) => {
           item={item}
           toggleTask={toggleTask}
           deleteTask={deleteTask}
-          editTask={editTask}
+          actionLoading={actionLoading}
         />
       ))}
     </ul>

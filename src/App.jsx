@@ -3,29 +3,33 @@ import TaskList from "./features/tasks/TaskList";
 import TaskInput from "./features/tasks/TaskInput";
 import TaskFilter from "./features/filter/TaskFilter";
 import Footer from "./features/tasks/Footer";
-import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  addTask,
-  deleteTask,
-  toggleTask,
-  editTask,
-  clearCompleted,
-  fetchTodos,
-} from "./features/tasks/todosSlice";
+  useGetTasksQuery,
+  useAddTaskMutation,
+  useDeleteTaskMutation,
+  useToggleTaskMutation,
+} from "./services/redevApi";
 import { setFilter } from "./features/filter/filterSlice";
 import { setSortOrder } from "./features/filter/sortSlice";
 
 function App() {
-  const { items, loading, error } = useSelector((state) => state.tasks);
+  const { data: items = [], error: tasksError, isLoading } = useGetTasksQuery();
+  const [addTask, { isLoading: isAdding, error: addError }] =
+    useAddTaskMutation();
+  const [deleteTask, { isLoading: isDeleting, error: deleteError }] =
+    useDeleteTaskMutation();
+  const [toggleTask, { isLoading: isToggling, error: toggleError }] =
+    useToggleTaskMutation();
+
   const filter = useSelector((state) => state.filter);
   const sort = useSelector((state) => state.sort);
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(fetchTodos());
-  }, []);
+  const loading = isDeleting || isToggling;
+
+  const error = tasksError || addError || deleteError || toggleError;
 
   const filteredTasks = items.filter((item) => {
     if (filter === "All") {
@@ -46,23 +50,15 @@ function App() {
   });
 
   function toggleTaskFn(id) {
-    dispatch(toggleTask(id));
+    toggleTask(id);
   }
 
   function deleteTaskFn(id) {
-    dispatch(deleteTask(id));
+    deleteTask(id);
   }
 
   function addTaskFn(task) {
-    dispatch(addTask(task));
-  }
-
-  function editTaskFn(id, newText) {
-    dispatch(editTask({ id, title: newText }));
-  }
-
-  function clearCompletedFn() {
-    dispatch(clearCompleted());
+    addTask(task);
   }
 
   function setFilterFn(filter) {
@@ -78,35 +74,28 @@ function App() {
   return (
     <div className="app">
       <h1>Приветствую проверяющего</h1>
-      <TaskInput addTask={addTaskFn} />
+      <TaskInput addTask={addTaskFn} actionLoading={isAdding} />
       <TaskFilter
         filter={filter}
         setFilter={setFilterFn}
         sortOrder={sort}
         setSortOrder={setSortOrderFn}
       />
-      {loading ? (
+      {isLoading ? (
         <p className="loading-text">Загрузка...</p>
       ) : error ? (
         <div className="error-box">
-          <p className="error-title">Ошибка, попробуйте снова</p>
-          <p className="error-detail">{error}</p>
+          <p className="error-title">Что-то пошло не так</p>
         </div>
       ) : (
         <TaskList
           items={sortedTasks}
           toggleTask={toggleTaskFn}
           deleteTask={deleteTaskFn}
-          editTask={editTaskFn}
+          actionLoading={loading}
         />
       )}
-      <button
-        className="btn btn-refresh"
-        onClick={() => dispatch(fetchTodos())}
-      >
-        Обновить данные
-      </button>
-      <Footer clearCompleted={clearCompletedFn} leftTasks={leftTasks} />
+      <Footer leftTasks={leftTasks} />
     </div>
   );
 }
