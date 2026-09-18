@@ -31,9 +31,9 @@ function App() {
     if (filter === "All") {
       return true;
     } else if (filter === "Active") {
-      return item.completed === false;
+      return !item.completed;
     } else {
-      return item.completed === true;
+      return item.completed;
     }
   });
 
@@ -73,7 +73,7 @@ function App() {
     dispatch(setSortOrder(sort));
   }
 
-  const leftTasks = items.filter((item) => item.completed === false).length;
+  const leftTasks = items.filter((item) => !item.completed).length;
 
   return (
     <div className="app">

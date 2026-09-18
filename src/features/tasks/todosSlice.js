@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, nanoid } from "@reduxjs/toolkit";
 
 export const fetchTodos = createAsyncThunk(
   "todos/fetchTodos",
@@ -29,12 +29,19 @@ const todosSlice = createSlice({
     error: null,
   },
   reducers: {
-    addTask: (state, action) => {
-      state.items.push({
-        id: Date.now(),
-        title: action.payload,
-        completed: false,
-      });
+    addTask: {
+      reducer: (state, action) => {
+        state.items.push(action.payload);
+      },
+      prepare: (title) => {
+        return {
+          payload: {
+            id: nanoid(),
+            title,
+            completed: false,
+          },
+        };
+      },
     },
     toggleTask: (state, action) => {
       const toggledTask = state.items.find(
@@ -61,7 +68,7 @@ const todosSlice = createSlice({
       }
     },
     clearCompleted: (state) => {
-      state.items = state.items.filter((item) => item.completed === false);
+      state.items = state.items.filter((item) => !item.completed);
     },
   },
   extraReducers: (builder) => {
