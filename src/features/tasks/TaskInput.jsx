@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const TaskInput = ({ addTask }) => {
+const TaskInput = ({ addTask, actionLoading }) => {
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   return (
@@ -12,6 +12,7 @@ const TaskInput = ({ addTask }) => {
           placeholder="Что нужно сделать?"
           value={text}
           onChange={(e) => setText(e.target.value)}
+          disabled={actionLoading}
         />
         <button
           className="btn btn-primary"
@@ -25,6 +26,7 @@ const TaskInput = ({ addTask }) => {
               setError("");
             }
           }}
+          disabled={actionLoading}
         >
           Добавить
         </button>

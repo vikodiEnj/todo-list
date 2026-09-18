@@ -1,93 +1,101 @@
 import "./App.css";
-import TaskList from "./TaskList";
-import TaskInput from "./TaskInput";
-import TaskFilter from "./TaskFilter";
-import Footer from "./Footer";
-import { useState, useEffect } from "react";
+import TaskList from "./features/tasks/TaskList";
+import TaskInput from "./features/tasks/TaskInput";
+import TaskFilter from "./features/filter/TaskFilter";
+import Footer from "./features/tasks/Footer";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  useGetTasksQuery,
+  useAddTaskMutation,
+  useDeleteTaskMutation,
+  useToggleTaskMutation,
+} from "./services/redevApi";
+import { setFilter } from "./features/filter/filterSlice";
+import { setSortOrder } from "./features/filter/sortSlice";
 
 function App() {
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem("tasks");
-    return saved
-      ? JSON.parse(saved)
-      : [
-          { id: 1, text: "Покушать", isComplete: true },
-          { id: 2, text: "Поесть", isComplete: false },
-          { id: 3, text: "Пообедать", isComplete: false },
-        ];
-  });
+  const { data: items = [], error: tasksError, isLoading } = useGetTasksQuery();
+  const [addTask, { isLoading: isAdding, error: addError }] =
+    useAddTaskMutation();
+  const [deleteTask, { isLoading: isDeleting, error: deleteError }] =
+    useDeleteTaskMutation();
+  const [toggleTask, { isLoading: isToggling, error: toggleError }] =
+    useToggleTaskMutation();
 
-  useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+  const filter = useSelector((state) => state.filter);
+  const sort = useSelector((state) => state.sort);
 
-  const [filter, setFilter] = useState("All");
+  const dispatch = useDispatch();
 
-  const filteredTasks = tasks.filter((item) => {
+  const loading = isDeleting || isToggling;
+
+  const error = tasksError || addError || deleteError || toggleError;
+
+  const filteredTasks = items.filter((item) => {
     if (filter === "All") {
       return true;
     } else if (filter === "Active") {
-      return item.isComplete === false;
+      return !item.completed;
     } else {
-      return item.isComplete === true;
+      return item.completed;
     }
   });
 
-  function toggleTask(id) {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, isComplete: !task.isComplete } : task,
-      ),
-    );
-  }
-
-  function deleteTask(id) {
-    setTasks(tasks.filter((task) => task.id !== id));
-  }
-
-  function addTask(task) {
-    setTasks([...tasks, { id: Date.now(), text: task, isComplete: false }]);
-  }
-
-  function editTask(id, newText) {
-    setTasks(
-      tasks.map((task) => (task.id === id ? { ...task, text: newText } : task)),
-    );
-  }
-
-  function clearCompleted() {
-    setTasks(tasks.filter((item) => item.isComplete === false));
-  }
-
-  const leftTasks = tasks.filter((item) => item.isComplete === false).length;
-
-  const [sortOrder, setSortOrder] = useState("newest");
-
   const sortedTasks = [...filteredTasks].sort((a, b) => {
-    if (sortOrder === "newest") {
+    if (sort === "newest") {
       return b.id - a.id;
     } else {
       return a.id - b.id;
     }
   });
 
+  function toggleTaskFn(id) {
+    toggleTask(id);
+  }
+
+  function deleteTaskFn(id) {
+    deleteTask(id);
+  }
+
+  function addTaskFn(task) {
+    addTask(task);
+  }
+
+  function setFilterFn(filter) {
+    dispatch(setFilter(filter));
+  }
+
+  function setSortOrderFn(sort) {
+    dispatch(setSortOrder(sort));
+  }
+
+  const leftTasks = items.filter((item) => !item.completed).length;
+
   return (
     <div className="app">
       <h1>Приветствую проверяющего</h1>
-      <TaskInput addTask={addTask} />
+      <TaskInput addTask={addTaskFn} actionLoading={isAdding} />
       <TaskFilter
         filter={filter}
-        setFilter={setFilter}
-        sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
+        setFilter={setFilterFn}
+        sortOrder={sort}
+        setSortOrder={setSortOrderFn}
       />
-      <TaskList
-        tasks={sortedTasks}
-        toggleTask={toggleTask}
-        deleteTask={deleteTask}
-        editTask={editTask}
-      />
-      <Footer clearCompleted={clearCompleted} leftTasks={leftTasks} />
+      {isLoading ? (
+        <p className="loading-text">Загрузка...</p>
+      ) : error ? (
+        <div className="error-box">
+          <p className="error-title">Что-то пошло не так</p>
+        </div>
+      ) : (
+        <TaskList
+          items={sortedTasks}
+          toggleTask={toggleTaskFn}
+          deleteTask={deleteTaskFn}
+          actionLoading={loading}
+        />
+      )}
+      <Footer leftTasks={leftTasks} />
     </div>
   );
 }
