@@ -1,16 +1,49 @@
-# React + Vite
+# ToDo List — Redux Toolkit
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Простое ToDo-приложение на React. Все данные о задачах хранятся в Redux store и управляются через Redux Toolkit (`createSlice`, `configureStore`).
 
-Currently, two official plugins are available:
+## Функциональность
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- добавление, редактирование, удаление задач;
+- отметка задачи выполненной (toggle);
+- фильтры: Все / Активные / Завершённые;
+- сортировка: сначала новые / сначала старые;
+- очистка выполненных задач;
+- сохранение данных в `localStorage` — список задач не пропадает при перезагрузке страницы.
 
-## React Compiler
+## Запуск проекта
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install    # установка зависимостей
+npm run dev    # запуск дев-сервера с горячей перезагрузкой
+npm run build  # сборка production-версии в папку dist
+npm run preview # локальный просмотр собранной production-версии
+npm run lint   # проверка кода линтером (ESLint)
+```
 
-## Expanding the ESLint configuration
+## Store
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Store собирается в `src/app/store.js` через `configureStore` и состоит из трёх слайсов:
+
+| Ключ store | Слайс | Что хранит |
+|---|---|---|
+| `state.tasks` | `todosSlice` | массив задач: `{ id, text, isComplete }` |
+| `state.filter` | `filterSlice` | строка текущего фильтра: `"All"` / `"Active"` / `"Completed"` |
+| `state.sort` | `sortSlice` | строка текущего порядка сортировки: `"newest"` / `"oldest"` |
+
+## Slices
+
+### `todosSlice` (`src/features/tasks/todosSlice.js`)
+- `addTask` — добавляет новую задачу;
+- `toggleTask` — переключает `isComplete` у задачи по `id`;
+- `deleteTask` — удаляет задачу по `id`;
+- `editTask` — меняет текст задачи;
+- `clearCompleted` — оставляет в списке только невыполненные задачи.
+
+### `filterSlice` (`src/features/filter/filterSlice.js`)
+- `setFilter` — устанавливает активный фильтр (`All` / `Active` / `Completed`).
+
+### `sortSlice` (`src/features/filter/sortSlice.js`)
+- `setSortOrder` — устанавливает порядок сортировки (`newest` / `oldest`).
+
+Компоненты читают состояние через `useSelector` и вызывают экшены через `useDispatch` — собственного дублирующего состояния задач в компонентах нет (кроме локального черновика текста при редактировании задачи).
