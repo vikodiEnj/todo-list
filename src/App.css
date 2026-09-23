@@ -234,3 +234,100 @@ h1 {
   background: #f2f3f9;
   color: #e5484d;
 }
+
+/* --- Async data states (createAsyncThunk) --- */
+
+.loading-text {
+  margin: 20px 0;
+  text-align: center;
+  font-size: 14px;
+  color: #7a7d92;
+}
+
+.error-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #fdeeee;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 8px 0;
+}
+
+.error-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e5484d;
+}
+
+.error-detail {
+  margin: 0;
+  font-size: 13px;
+  color: #c94146;
+}
+
+.btn-refresh {
+  width: 100%;
+  margin-top: 14px;
+  background: #f2f3f9;
+  color: #565971;
+  font-weight: 600;
+  text-align: center;
+}
+
+.btn-refresh:hover {
+  background: #e7e9f5;
+}
+
+/* --- Auth --- */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-form .btn-primary {
+  padding: 11px 14px;
+  font-size: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #dde1ee;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.form-input:focus {
+  border-color: #6c7bf5;
+}
+
+.auth-status {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #7a7d92;
+  text-align: center;
+}
+
+.auth-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-choice .btn {
+  padding: 12px 14px;
+  font-size: 15px;
+}
