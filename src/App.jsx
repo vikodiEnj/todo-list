@@ -3,29 +3,42 @@ import TaskList from "./features/tasks/TaskList";
 import TaskInput from "./features/tasks/TaskInput";
 import TaskFilter from "./features/filter/TaskFilter";
 import Footer from "./features/tasks/Footer";
-import { useEffect } from "react";
+import RegistrationForm from "./features/auth/RegistrationForm";
+import LoginForm from "./features/auth/LoginForm";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   addTask,
   deleteTask,
   toggleTask,
   editTask,
-  clearCompleted,
   fetchTodos,
+  clearCompleted,
 } from "./features/tasks/todosSlice";
 import { setFilter } from "./features/filter/filterSlice";
 import { setSortOrder } from "./features/filter/sortSlice";
+import { loginUser, registerUser } from "./features/auth/authSlice";
 
 function App() {
   const { items, loading, error } = useSelector((state) => state.tasks);
+  const {
+    token,
+    loading: loadingAuth,
+    error: errorAuth,
+  } = useSelector((state) => state.auth);
   const filter = useSelector((state) => state.filter);
   const sort = useSelector((state) => state.sort);
+
+  const [isSubmitting, setSubmitting] = useState();
+  const [authView, setAuthView] = useState("register");
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchTodos());
-  }, []);
+    if (token) {
+      dispatch(fetchTodos());
+    }
+  }, [token]);
 
   const filteredTasks = items.filter((item) => {
     if (filter === "All") {
@@ -45,20 +58,29 @@ function App() {
     }
   });
 
+  function handleLogin(email, password) {
+    dispatch(loginUser({ email, password }));
+  }
+
+  function handleRegister(name, email, password) {
+    dispatch(registerUser({ name, email, password }));
+  }
+
   function toggleTaskFn(id) {
-    dispatch(toggleTask(id));
+    return dispatch(toggleTask(id));
   }
 
   function deleteTaskFn(id) {
-    dispatch(deleteTask(id));
+    return dispatch(deleteTask(id));
   }
 
   function addTaskFn(task) {
-    dispatch(addTask(task));
+    setSubmitting(true);
+    dispatch(addTask(task)).then((v) => setSubmitting(false));
   }
 
   function editTaskFn(id, newText) {
-    dispatch(editTask({ id, title: newText }));
+    return dispatch(editTask({ id, title: newText }));
   }
 
   function clearCompletedFn() {
@@ -75,10 +97,10 @@ function App() {
 
   const leftTasks = items.filter((item) => !item.completed).length;
 
-  return (
+  return token ? (
     <div className="app">
       <h1>Приветствую проверяющего</h1>
-      <TaskInput addTask={addTaskFn} />
+      <TaskInput addTask={addTaskFn} isSubmitting={isSubmitting} />
       <TaskFilter
         filter={filter}
         setFilter={setFilterFn}
@@ -102,12 +124,27 @@ function App() {
       )}
       <button
         className="btn btn-refresh"
+        disabled={loading}
         onClick={() => dispatch(fetchTodos())}
       >
         Обновить данные
       </button>
       <Footer clearCompleted={clearCompletedFn} leftTasks={leftTasks} />
     </div>
+  ) : authView === "register" ? (
+    <RegistrationForm
+      onSubmit={handleRegister}
+      loading={loadingAuth}
+      error={errorAuth}
+      onSwitchToLogin={() => setAuthView("login")}
+    />
+  ) : (
+    <LoginForm
+      onSubmit={handleLogin}
+      loading={loadingAuth}
+      error={errorAuth}
+      onSwitchToRegister={() => setAuthView("register")}
+    />
   );
 }
 

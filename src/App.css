@@ -279,3 +279,55 @@ h1 {
 .btn-refresh:hover {
   background: #e7e9f5;
 }
+
+/* --- Auth --- */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-form .btn-primary {
+  padding: 11px 14px;
+  font-size: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #dde1ee;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.form-input:focus {
+  border-color: #6c7bf5;
+}
+
+.auth-status {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #7a7d92;
+  text-align: center;
+}
+
+.auth-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-choice .btn {
+  padding: 12px 14px;
+  font-size: 15px;
+}

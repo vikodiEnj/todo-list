@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, nanoid } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 export const fetchTodos = createAsyncThunk(
   "todos/fetchTodos",
@@ -6,7 +6,7 @@ export const fetchTodos = createAsyncThunk(
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/todos`, {
         headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
+          Authorization: `Bearer ${thunkAPI.getState().auth.token}`,
         },
       });
       if (response.ok) {
@@ -21,6 +21,120 @@ export const fetchTodos = createAsyncThunk(
   },
 );
 
+export const addTask = createAsyncThunk(
+  "todos/addTask",
+  async (title, thunkAPI) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/todos`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${thunkAPI.getState().auth.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title }),
+      });
+      if (response.ok) {
+        const json = await response.json();
+        return json;
+      } else {
+        return thunkAPI.rejectWithValue(response.statusText);
+      }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const editTask = createAsyncThunk(
+  "todos/editTask",
+  async ({ id, title }, thunkAPI) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/todos/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${thunkAPI.getState().auth.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title }),
+        },
+      );
+      if (response.ok) {
+        const json = await response.json();
+        return json;
+      } else {
+        return thunkAPI.rejectWithValue(response.statusText);
+      }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const toggleTask = createAsyncThunk(
+  "todos/toggleTask",
+  async (id, thunkAPI) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/todos/${id}/toggle`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${thunkAPI.getState().auth.token}`,
+          },
+        },
+      );
+      if (response.ok) {
+        const json = await response.json();
+        return json.id;
+      } else {
+        return thunkAPI.rejectWithValue(response.statusText);
+      }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const deleteTask = createAsyncThunk(
+  "todos/deleteTask",
+  async (id, thunkAPI) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/todos/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${thunkAPI.getState().auth.token}`,
+          },
+        },
+      );
+      if (response.ok) {
+        return id;
+      } else {
+        return thunkAPI.rejectWithValue(response.statusText);
+      }
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  },
+);
+
+export const clearCompleted = createAsyncThunk(
+  "todos/clearCompleted",
+  async (_, thunkAPI) => {
+    let completedIds = thunkAPI
+      .getState()
+      .tasks.items.filter((item) => item.completed)
+      .map((task) => task.id);
+    await Promise.all(
+      completedIds.map((id) => thunkAPI.dispatch(deleteTask(id))),
+    );
+    return completedIds;
+  },
+);
+
 const todosSlice = createSlice({
   name: "todos",
   initialState: {
@@ -28,49 +142,7 @@ const todosSlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {
-    addTask: {
-      reducer: (state, action) => {
-        state.items.push(action.payload);
-      },
-      prepare: (title) => {
-        return {
-          payload: {
-            id: nanoid(),
-            title,
-            completed: false,
-          },
-        };
-      },
-    },
-    toggleTask: (state, action) => {
-      const toggledTask = state.items.find(
-        (item) => item.id === action.payload,
-      );
-      toggledTask.completed = !toggledTask.completed;
-    },
-    deleteTask: (state, action) => {
-      const index = state.items.findIndex((task) => task.id === action.payload);
-      if (index !== -1) {
-        state.items.splice(index, 1);
-      }
-    },
-    editTask: (state, action) => {
-      const index = state.items.findIndex(
-        (task) => task.id === action.payload.id,
-      );
-      if (index !== -1) {
-        state.items.splice(index, 1, {
-          id: state.items[index].id,
-          title: action.payload.title,
-          completed: state.items[index].completed,
-        });
-      }
-    },
-    clearCompleted: (state) => {
-      state.items = state.items.filter((item) => !item.completed);
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchTodos.pending, (state) => {
@@ -84,10 +156,52 @@ const todosSlice = createSlice({
       .addCase(fetchTodos.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(addTask.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items.push(action.payload);
+        state.error = null;
+      })
+      .addCase(addTask.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(editTask.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = state.items.map((task) =>
+          task.id === action.payload.id
+            ? { ...task, title: action.payload.title }
+            : task,
+        );
+        state.error = null;
+      })
+      .addCase(editTask.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(toggleTask.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = state.items.map((task) =>
+          task.id === action.payload
+            ? { ...task, completed: !task.completed }
+            : task,
+        );
+        state.error = null;
+      })
+      .addCase(toggleTask.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteTask.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = state.items.filter((task) => task.id != action.payload);
+        state.error = null;
+      })
+      .addCase(deleteTask.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { addTask, toggleTask, deleteTask, editTask, clearCompleted } =
-  todosSlice.actions;
 export default todosSlice.reducer;

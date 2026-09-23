@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const TaskInput = ({ addTask }) => {
+const TaskInput = ({ addTask, isSubmitting }) => {
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   return (
@@ -14,6 +14,7 @@ const TaskInput = ({ addTask }) => {
           onChange={(e) => setText(e.target.value)}
         />
         <button
+          disabled={isSubmitting}
           className="btn btn-primary"
           onClick={() => {
             if (text.trim().length === 0) {

@@ -2,14 +2,15 @@ import { useState } from "react";
 
 const TaskItem = ({ item, toggleTask, deleteTask, editTask }) => {
   const [isEditing, setIsEditing] = useState(false);
-
+  const [isSubmitting, setSubmitting] = useState();
   const [draft, setDraft] = useState(item.title);
 
   function saveEdit() {
     if (draft.trim().length === 0) {
       return;
     } else {
-      editTask(item.id, draft);
+      setSubmitting(true);
+      editTask(item.id, draft).then(() => setSubmitting(false));
       setIsEditing(false);
     }
   }
@@ -25,10 +26,14 @@ const TaskItem = ({ item, toggleTask, deleteTask, editTask }) => {
   return (
     <li className="task-item">
       <input
+        disabled={isSubmitting}
         type="checkbox"
         className="task-checkbox"
         checked={item.completed}
-        onChange={() => toggleTask(item.id)}
+        onChange={() => {
+          (setSubmitting(true),
+            toggleTask(item.id).then(() => setSubmitting(false)));
+        }}
       />
       {isEditing ? (
         <div className="edit-group">
@@ -41,6 +46,7 @@ const TaskItem = ({ item, toggleTask, deleteTask, editTask }) => {
             onBlur={() => setIsEditing(false)}
           />
           <button
+            disabled={isSubmitting}
             className="btn btn-save"
             onMouseDown={(e) => e.preventDefault()}
             onClick={saveEdit}
@@ -65,8 +71,12 @@ const TaskItem = ({ item, toggleTask, deleteTask, editTask }) => {
             Редактировать
           </button>
           <button
+            disabled={isSubmitting}
             className="btn btn-delete"
-            onClick={() => deleteTask(item.id)}
+            onClick={() => {
+              (setSubmitting(true),
+                deleteTask(item.id).then(() => setSubmitting(false)));
+            }}
           >
             ×
           </button>
